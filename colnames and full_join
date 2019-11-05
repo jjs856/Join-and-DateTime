@@ -1,0 +1,103 @@
+
+### Read in all files in directory, filter by start and end date for specified range, full join them. 
+```{r}
+slaney <- matrix(nrow = 1, ncol = 1 ) %>% data.frame()
+colnames(aw_slaney) <- c("DateTime")#, "Heart", "Calories", "Steps", "Distance")
+Starttime <- as_datetime("2019-10-04 7:30:00")
+Endtime <- as_datetime("2019-10-05 7:15:00")
+aw_slaney$DateTime <- Starttime
+
+dir(path = "C:/Users/jslan/Desktop/aw_slaney" , full.names = TRUE, pattern = "*.csv", recursive = TRUE) %>%
+   purrr::map(function(i){
+     dfaw <<- read.csv(i, header = TRUE) %>% data.frame()
+     dfaw$DateTime <- as_datetime(dfaw$DateTime)
+     dfaw <- dfaw %>% filter((DateTime < Endtime) & (DateTime > Starttime)) 
+     aw_slaney <<- full_join(aw_slaney, dfaw, by = c("DateTime"))
+   })
+```
+
+###To create a sequence of DateTime
+```{r}
+library(tidyverse)
+library(lubridate)
+start_time <- ymd_hms("2019-05-13 10:00:00")
+end_time <- ymd_hms("2019-05-14 11:00:00")
+base_df <- seq(start_time, end_time , by = "1 min") %>%  as.data.frame()
+```
+
+# How to summarise data 
+
+```{r}
+library(tidyverse)
+library(lubridate)
+```
+
+########### Create a data set to test the code #############
+
+```{r}
+df <- matrix(nrow = 601, ncol = 2) %>% data.frame()
+colnames(df) <- c("time","heart_rate")
+start_time <- as_datetime("2020-01-01 10:00:00")
+end_time <- as_datetime("2020-01-01 10:10:00")
+df$time <- seq(from = start_time, to = end_time, by = "s")
+df$heart_rate <- runif(n = 601,min = 60, max = 150) %>% round(digits = 0)
+# Check the datafram
+View(df)
+```
+
+######################## Summarise OR mutate ######################
+# for each minute return one row
+
+# Create a helper column at the desired level, here is minute
+```{r}
+df$helper <- df$time %>% floor_date("minute")
+# Check the dataframe
+View(df)
+```
+
+# Return a smaller data set
+
+```{r}
+df_summarised <- df %>% group_by(helper) %>% summarise(HR = mean(heart_rate))
+View(df_summarised)
+```
+
+# returns a longer dataset with mutate
+```{r}
+df_long <- df %>%  group_by(helper) %>% mutate(HR = mean(heart_rate))
+View(df_long)
+```
+
+
+### Change frequency of time to minutes or seconds or 0.1 seconds
+
+ ## floor or round the datetime to 0.1s intervals
+ # change frequency to 10 hz
+ ## floor or round the datetime to 0.1s intervals
+ df <-
+   df$record_time %>%
+   floor_date(unit = "0.1s") %>%
+   mutate(df, record_time = .)
+ df_10hrz <-
+   df %>%
+   group_by(record_time) %>%
+   select(x_axis, y_axis, z_axis) %>%
+   summarise(
+     x_axis = mean(x_axis),
+     y_axis = mean(y_axis),
+     z_axis = mean(z_axis)
+   )
+ df <-
+   df$record_time %>%
+   floor_date(unit = "0.1s") %>%
+   mutate(df, record_time = .)
+ df_10hrz <-
+   df %>%
+   group_by(record_time) %>%
+   select(x_axis, y_axis, z_axis) %>%
+   summarise(
+     x_axis = mean(x_axis),
+     y_axis = mean(y_axis),
+     z_axis = mean(z_axis)
+   )
+   ```
